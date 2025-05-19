@@ -14,6 +14,7 @@ TOKEN: Final[str] = os.getenv("DISCORD_TOKEN")
 
 intents: discord.Intents = discord.Intents.default()
 intents.message_content = True
+intents.voice_states = True
 
 client = commands.Bot(command_prefix='=', intents=intents)
 
