@@ -7,7 +7,7 @@ import os
 FFMPEG_OPTIONS = {'options': '-vn'}
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': True}
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ffmpeg_path = os.path.join(BASE_DIR, "bin", "ffmpeg", "ffmpeg.exe")
+ffmpeg_path = "ffmpeg" #FOR IF YOU ARE ON WINDOWS  os.path.join(BASE_DIR, "bin", "ffmpeg", "ffmpeg.exe")
 
 class Musica(commands.Cog):
     def __init__(self, client):
