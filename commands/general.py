@@ -27,47 +27,58 @@ class General(commands.Cog):
 
 
     @commands.command(name='detailedabout')
-    async def detailedabout(self,ctx):
-        embedVar = discord.Embed(title="Commands for BonBonBot", description="Here's a list of all the available commands:", color=0x552583)
+    async def detailedabout(self, ctx):
+        # First Embed: General + Aura and Chips
+        embed1 = discord.Embed(
+            title="Commands for BonBonBot (1/2)", 
+            description="Here's a list of general and aura-related commands:", 
+            color=0x552583
+        )
 
         # General Commands
-        embedVar.add_field(name="**General**", value="\u200b", inline=False)   
-        embedVar.add_field(name=":information_source: **=about**", value="Discover commands", inline=True)
-        embedVar.add_field(name=":wave: **=hello**", value="Get a friendly greeting from BonBon", inline=True)
-        embedVar.add_field(name=":identification_card: **=pr**", value="view your profile for BonBonBot", inline=True)
-        embedVar.add_field(name=":8ball: **=fortune**", value="ask Bonbon a yes or no question", inline=True)
+        embed1.add_field(name="**General**", value="\u200b", inline=False)
+        embed1.add_field(name=":information_source: **=about**", value="Discover commands", inline=True)
+        embed1.add_field(name=":wave: **=hello**", value="Get a friendly greeting from BonBon", inline=True)
+        embed1.add_field(name=":identification_card: **=pr**", value="View your profile for BonBonBot", inline=True)
+        embed1.add_field(name=":8ball: **=fortune**", value="Ask Bonbon a yes or no question", inline=True)
 
-    # Aura and Chips Commands
-        embedVar.add_field(name="\u200b", value="\u200b", inline=False)
-        embedVar.add_field(name="**Aura and Chips**", value="\u200b", inline=False)
-        embedVar.add_field(name=":sparkles: **=aura**", value="Check your current aura value or get your original aura reading", inline=True)
-        embedVar.add_field(name=":coin: **=chips**", value="Check your balance of gambling chips, currency used for all minigames", inline=True)
-        embedVar.add_field(name=":gift: **=daily**", value="Get your daily allowance of gambling chips, 500 each day", inline=True)
-        embedVar.add_field(name=":arrows_counterclockwise: **=ca**", value="Convert your aura to chips (1 aura = 10 chips)", inline=True)
-        embedVar.add_field(name=":arrows_clockwise: **=cc**", value="Convert your chips to aura (10 chips = 1 aura, full aura points only)", inline=True)
-        embedVar.add_field(name=":game_die: **=gambleaura**", value="Get a chance at increasing or decreasing your aura", inline=True)
-        embedVar.add_field(name=":trophy: **=ranking**", value="Get the leaderboard of users' aura", inline=True)
+        # Aura and Chips Commands
+        embed1.add_field(name="\u200b", value="\u200b", inline=False)
+        embed1.add_field(name="**Aura and Chips**", value="\u200b", inline=False)
+        embed1.add_field(name=":sparkles: **=aura**", value="Check your current aura value or get your original aura reading", inline=True)
+        embed1.add_field(name=":coin: **=chips**", value="Check your balance of gambling chips, currency used for all minigames", inline=True)
+        embed1.add_field(name=":gift: **=daily**", value="Get your daily allowance of gambling chips, 500 each day", inline=True)
+        embed1.add_field(name=":arrows_counterclockwise: **=ca**", value="Convert your aura to chips (1 aura = 10 chips)", inline=True)
+        embed1.add_field(name=":arrows_clockwise: **=cc**", value="Convert your chips to aura (10 chips = 1 aura, full aura points only)", inline=True)
+        embed1.add_field(name=":game_die: **=gambleaura**", value="Get a chance at increasing or decreasing your aura", inline=True)
+        embed1.add_field(name=":trophy: **=ranking**", value="Get the leaderboard of users' aura", inline=True)
 
-    # Games
-        embedVar.add_field(name="\u200b", value="\u200b", inline=False)
-        embedVar.add_field(name="**Games**", value="\u200b", inline=False)
-        embedVar.add_field(name=":fist: **=playRPS**", value="Rock Paper Scissors game, command to start the game (one at a time). Add a wager amount if you would like", inline=True)
-        embedVar.add_field(name=":raised_hand: **=joinRPS**", value="Join the Rock Paper Scissors game as the opponent, must match the wager of the host", inline=True)
-        embedVar.add_field(name=":question: **=trivia**", value="Use `=abouttrivia` for more information about the trivia game", inline=True)
-        embedVar.add_field(name=":black_joker: **=bj**", value="Blackjack game under normal rules, play against the dealer to be the closest to 21, add your bet value after the command. Add a wager amount if you would like", inline=True)
-        embedVar.add_field(name=":slot_machine: **=slots**", value="Take a roll on the slot machine, match a row of symbols to multiply your bet", inline=True)
+        # Second Embed: Games + Music
+        embed2 = discord.Embed(
+            title="Commands for BonBonBot (2/2)", 
+            description="Here's a list of game and music-related commands:", 
+            color=0x552583
+        )
 
+        # Games
+        embed2.add_field(name="**Games**", value="\u200b", inline=False)
+        embed2.add_field(name=":fist: **=playRPS**", value="Rock Paper Scissors game, command to start the game (one at a time). Add a wager amount if you would like", inline=True)
+        embed2.add_field(name=":raised_hand: **=joinRPS**", value="Join the Rock Paper Scissors game as the opponent, must match the wager of the host", inline=True)
+        embed2.add_field(name=":question: **=trivia**", value="Use `=abouttrivia` for more information about the trivia game", inline=True)
+        embed2.add_field(name=":black_joker: **=bj**", value="Blackjack game under normal rules, play against the dealer to be the closest to 21, add your bet value after the command", inline=True)
+        embed2.add_field(name=":slot_machine: **=slots**", value="Take a roll on the slot machine, match a row of symbols to multiply your bet", inline=True)
 
-# Music
-        embedVar.add_field(name="\u200b", value="\u200b", inline=False)
-        embedVar.add_field(name="**Music**", value="\u200b", inline=False)
-        embedVar.add_field(name=":arrow_forward: **=play**", value="Add song name or YT link you want played with this command, BonBon will join VC and play it", inline=True)
-        embedVar.add_field(name=":scroll: **=queue**", value="View the songs that are currently in queue, ordered in list format", inline=True)
-        embedVar.add_field(name=":fast_forward: **=skip**", value="Will skip the current song and move on to the next one", inline=True)
-        embedVar.add_field(name=":door: **=leave**", value="BonBon will leave the current VC and empty out all songs in the queue", inline=True)
+        # Music
+        embed2.add_field(name="\u200b", value="\u200b", inline=False)
+        embed2.add_field(name="**Music**", value="\u200b", inline=False)
+        embed2.add_field(name=":arrow_forward: **=play**", value="Add song name or YT link you want played with this command, BonBon will join VC and play it", inline=True)
+        embed2.add_field(name=":scroll: **=queue**", value="View the songs that are currently in queue, ordered in list format", inline=True)
+        embed2.add_field(name=":fast_forward: **=skip**", value="Will skip the current song and move on to the next one", inline=True)
+        embed2.add_field(name=":door: **=leave**", value="BonBon will leave the current VC and empty out all songs in the queue", inline=True)
 
-        await ctx.send(embed=embedVar)
-
+        # Send both embeds
+        await ctx.send(embed=embed1)
+        await ctx.send(embed=embed2)
 
     @commands.command(name='hello')
     async def hello(self,ctx):
