@@ -56,14 +56,28 @@ class Musica(commands.Cog):
         if not ctx.voice_client.is_playing():
             await self.play_next(ctx)
 
-    async def play_next(self, ctx):
-        if self.queue:
-            url, title = self.queue.pop(0)
-            source = discord.FFmpegOpusAudio(url, **FFMPEG_OPTIONS, executable=ffmpeg_path)
-            ctx.voice_client.play(source, after=lambda _: self.client.loop.create_task(self.play_next(ctx)))
-            await ctx.send(f'Now playing **{title}**')
-        else:
-            await self.start_idle_timer(ctx)
+        async def play_next(self, ctx):
+            if self.queue:
+                url, title = self.queue.pop(0)
+                self.current_song = title  # Track current song
+
+                source = discord.FFmpegOpusAudio(url, **FFMPEG_OPTIONS, executable=ffmpeg_path)
+                ctx.voice_client.play(source, after=lambda _: self.client.loop.create_task(self.play_next(ctx)))
+
+                embed = discord.Embed(
+                    title="🎵 Now Playing",
+                    description=f"**{title}**",
+                    color=discord.Color.green()
+                )
+                embed.set_footer(text="Use the buttons below to control playback.")
+
+                view = PlayerControls(ctx, self)
+
+                await ctx.send(embed=embed, view=view)
+            else:
+                self.current_song = None
+                await self.start_idle_timer(ctx)
+
 
     @commands.command()
     async def skip(self, ctx):
@@ -75,10 +89,23 @@ class Musica(commands.Cog):
 
     @commands.command(aliases=['q'])
     async def queue(self, ctx):
-        if not self.queue:
-            return await ctx.send("The queue is currently empty.")
-        queue_list = "\n".join([f"{idx+1}. {title}" for idx, (_, title) in enumerate(self.queue)])
-        await ctx.send(f"**Current Queue:**\n{queue_list}")
+        embed = discord.Embed(
+            title="🎶 Music Queue",
+            color=discord.Color.blurple()
+        )
+
+        # Now Playing
+        now_playing = self.current_song if self.current_song else "Nothing is currently playing."
+        embed.add_field(name="Now Playing 🎵", value=now_playing, inline=False)
+
+        # Up Next
+        if self.queue:
+            queue_list = "\n".join([f"{idx+1}. {title}" for idx, (_, title) in enumerate(self.queue)])
+            embed.add_field(name="Up Next ⏭️", value=queue_list, inline=False)
+        else:
+            embed.add_field(name="Up Next ⏭️", value="The queue is empty.", inline=False)
+
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=['dc', 'disconnect', 'stop'])
     async def leave(self, ctx):
@@ -95,3 +122,38 @@ class Musica(commands.Cog):
 
 async def setup(client):
     await client.add_cog(Musica(client))
+
+
+class PlayerControls(discord.ui.View):
+    def __init__(self, ctx, musica_cog):
+        super().__init__(timeout=None)
+        self.ctx = ctx
+        self.musica_cog = musica_cog
+        self.paused = False
+
+    @discord.ui.button(label="⏸ Pause", style=discord.ButtonStyle.primary)
+    async def pause_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.voice and interaction.user.voice.channel == self.ctx.voice_client.channel:
+            vc = self.ctx.voice_client
+            if not self.paused:
+                vc.pause()
+                self.paused = True
+                button.label = "▶ Resume"
+                await interaction.response.edit_message(view=self)
+            else:
+                vc.resume()
+                self.paused = False
+                button.label = "⏸ Pause"
+                await interaction.response.edit_message(view=self)
+        else:
+            await interaction.response.send_message("You must be in the same voice channel to control playback.", ephemeral=True)
+
+    @discord.ui.button(label="⏭ Skip", style=discord.ButtonStyle.danger)
+    async def skip_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if interaction.user.voice and interaction.user.voice.channel == self.ctx.voice_client.channel:
+            vc = self.ctx.voice_client
+            if vc.is_playing():
+                vc.stop()
+            await interaction.response.defer()
+        else:
+            await interaction.response.send_message("You must be in the same voice channel to control playback.", ephemeral=True)
