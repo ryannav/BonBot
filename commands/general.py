@@ -63,7 +63,7 @@ class General(commands.Cog):
         if str(username) == ".enyo." or str(username) == "aloosa" or str(username) == "josh._._.":
             response = f'https://tenor.com/view/coroca-breaking-bad-gif-20039378'
         else:
-            response = f'hello, {username}!!!'
+            response = f'hello, from CI/CL {username}!!!'
         await ctx.send(response)
 
 
