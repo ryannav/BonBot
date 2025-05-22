@@ -14,6 +14,7 @@ class Musica(commands.Cog):
         self.client = client
         self.queue = []
         self.idle_timer = None
+        self.current_song = None
 
     def same_voice_channel(self, ctx):
         return ctx.author.voice and ctx.voice_client and ctx.author.voice.channel == ctx.voice_client.channel
@@ -56,27 +57,27 @@ class Musica(commands.Cog):
         if not ctx.voice_client.is_playing():
             await self.play_next(ctx)
 
-        async def play_next(self, ctx):
-            if self.queue:
-                url, title = self.queue.pop(0)
-                self.current_song = title  # Track current song
+    async def play_next(self, ctx):
+        if self.queue:
+            url, title = self.queue.pop(0)
+            self.current_song = title  # Track current song
 
-                source = discord.FFmpegOpusAudio(url, **FFMPEG_OPTIONS, executable=ffmpeg_path)
-                ctx.voice_client.play(source, after=lambda _: self.client.loop.create_task(self.play_next(ctx)))
+            source = discord.FFmpegOpusAudio(url, **FFMPEG_OPTIONS, executable=ffmpeg_path)
+            ctx.voice_client.play(source, after=lambda _: self.client.loop.create_task(self.play_next(ctx)))
 
-                embed = discord.Embed(
-                    title="🎵 Now Playing",
-                    description=f"**{title}**",
-                    color=discord.Color.green()
-                )
-                embed.set_footer(text="Use the buttons below to control playback.")
+            embed = discord.Embed(
+                title="🎵 Now Playing",
+                description=f"**{title}**",
+                color=discord.Color.green()
+            )
+            embed.set_footer(text="Use the buttons below to control playback.")
 
-                view = PlayerControls(ctx, self)
+            view = PlayerControls(ctx, self)
 
-                await ctx.send(embed=embed, view=view)
-            else:
-                self.current_song = None
-                await self.start_idle_timer(ctx)
+            await ctx.send(embed=embed, view=view)
+        else:
+            self.current_song = None
+            await self.start_idle_timer(ctx)
 
 
     @commands.command()
