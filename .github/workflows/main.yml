@@ -1,0 +1,15 @@
+name: CICD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      
+jobs:
+  run-local:
+    runs-on: self-hosted
+    steps:
+      - run: git pull
