@@ -20,6 +20,9 @@ class General(commands.Cog):
         # Games
         embedVar.add_field(name="**Games**", value=":fist: **=playRPS** - Start Rock Paper Scissors (add bet)\n:raised_hand: **=joinRPS** - Join ongoing Rock Paper Scissors\n:question: **=trivia** - Trivia info\n:black_joker: **=bj** - Blackjack (add bet)\n:slot_machine: **=slots** - Slots (add bet)", inline=True)
 
+        # Music
+        embedVar.add_field(name="**Music**", value=":arrow_forward: **=play** - Play a song from youtube (link or title)\n:scroll: **=queue** - View the songs in the queue\n:fast_forward: **=skip** - Skip the song playing\n:door: **=leave** - Make the bot leave vc", inline=True)
+
         await ctx.send(embed=embedVar)
 
 
@@ -53,6 +56,15 @@ class General(commands.Cog):
         embedVar.add_field(name=":question: **=trivia**", value="Use `=abouttrivia` for more information about the trivia game", inline=True)
         embedVar.add_field(name=":black_joker: **=bj**", value="Blackjack game under normal rules, play against the dealer to be the closest to 21, add your bet value after the command. Add a wager amount if you would like", inline=True)
         embedVar.add_field(name=":slot_machine: **=slots**", value="Take a roll on the slot machine, match a row of symbols to multiply your bet", inline=True)
+
+
+# Music
+        embedVar.add_field(name="\u200b", value="\u200b", inline=False)
+        embedVar.add_field(name="**Music**", value="\u200b", inline=False)
+        embedVar.add_field(name=":arrow_forward: **=play**", value="Add song name or YT link you want played with this command, BonBon will join VC and play it", inline=True)
+        embedVar.add_field(name=":scroll: **=queue**", value="View the songs that are currently in queue, ordered in list format", inline=True)
+        embedVar.add_field(name=":fast_forward: **=skip**", value="Will skip the current song and move on to the next one", inline=True)
+        embedVar.add_field(name=":door: **=leave**", value="BonBon will leave the current VC and empty out all songs in the queue", inline=True)
 
         await ctx.send(embed=embedVar)
 
