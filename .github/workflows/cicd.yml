@@ -13,4 +13,4 @@ jobs:
     runs-on: self-hosted
     steps:
       - run: cd /home/ryan/projs/bot/BonBot && git fetch && git pull
-      - run: /bin/systemctl restart bonbot.service
+      - run: sudo /bin/systemctl restart bonbot.service
