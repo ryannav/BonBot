@@ -4,11 +4,17 @@ import yt_dlp
 import asyncio
 import os
 
-FFMPEG_OPTIONS = {'options': '-vn'}
-YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': True}
+YDL_OPTIONS = {
+    'format': 'bestaudio[ext=m4a]/bestaudio/best',
+    'noplaylist': True
+}
+
+FFMPEG_OPTIONS = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+    'options': '-vn -loglevel panic'
+}
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ffmpeg_path = "ffmpeg"  #FOR IF YOU ARE ON WINDOWS  os.path.join(BASE_DIR, "bin", "ffmpeg", "ffmpeg.exe")
-
 class Musica(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -66,38 +72,61 @@ class Musica(commands.Cog):
                     info = info['entries'][0]
                 url = info['url']
                 title = info['title']
-                self.queue.append((url, title))
+                thumbnail = info.get('thumbnail')
+                self.queue.append((url, title, thumbnail))
 
                 embed = discord.Embed(
                     title="🎶 Added to Queue",
                     description=f"**{title}**",
                     color=discord.Color.blue()
                 )
+                if thumbnail:
+                    embed.set_thumbnail(url=thumbnail)
                 await ctx.send(embed=embed)
 
         if not ctx.voice_client.is_playing():
             await self.play_next(ctx)
 
+    async def disable_controls_and_continue(self, ctx, view):
+        try:
+            view.disable_all_buttons()
+            if view.message:
+                await view.message.edit(view=view)
+        except Exception as e:
+            print(f"Error disabling buttons: {e}")
+        
+        await self.play_next(ctx)
+
     async def play_next(self, ctx):
         if self.queue:
-            url, title = self.queue.pop(0)
+            url, title, thumbnail = self.queue.pop(0)
             self.current_song = title
 
             source = discord.FFmpegOpusAudio(url, **FFMPEG_OPTIONS, executable=ffmpeg_path)
-            ctx.voice_client.play(source, after=lambda _: self.client.loop.create_task(self.play_next(ctx)))
+
+            view = PlayerControls(ctx, self)
 
             embed = discord.Embed(
                 title="🎵 Now Playing",
                 description=f"**{title}**",
                 color=discord.Color.green()
             )
+            embed.set_thumbnail(url=thumbnail)
             embed.set_footer(text="Use the buttons below to control playback.")
 
-            view = PlayerControls(ctx, self)
-            await ctx.send(embed=embed, view=view)
+            message = await ctx.send(embed=embed, view=view)
+            view.message = message
+
+            def after_playback(error):
+                if error:
+                    print(f"Error in playback: {error}")
+                self.client.loop.create_task(self.disable_controls_and_continue(ctx, view))
+
+            ctx.voice_client.play(source, after=after_playback)
         else:
             self.current_song = None
             await self.start_idle_timer(ctx)
+
 
     @commands.command()
     async def skip(self, ctx):
@@ -175,6 +204,11 @@ class PlayerControls(discord.ui.View):
         self.ctx = ctx
         self.musica_cog = musica_cog
         self.paused = False
+
+    def disable_all_buttons(self):
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                child.disabled = True
 
     @discord.ui.button(label="⏸ Pause", style=discord.ButtonStyle.primary)
     async def pause_button(self, interaction: discord.Interaction, button: discord.ui.Button):
