@@ -7,7 +7,7 @@ import os
 FFMPEG_OPTIONS = {'options': '-vn'}
 YDL_OPTIONS = {'format': 'bestaudio', 'noplaylist': True}
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ffmpeg_path = "ffmpeg"  # Adjust if necessary
+ffmpeg_path = "ffmpeg"  #FOR IF YOU ARE ON WINDOWS  os.path.join(BASE_DIR, "bin", "ffmpeg", "ffmpeg.exe")
 
 class Musica(commands.Cog):
     def __init__(self, client):
@@ -66,16 +66,13 @@ class Musica(commands.Cog):
                     info = info['entries'][0]
                 url = info['url']
                 title = info['title']
-                thumbnail = info.get('thumbnail')
-                self.queue.append((url, title, thumbnail))
+                self.queue.append((url, title))
 
                 embed = discord.Embed(
                     title="🎶 Added to Queue",
                     description=f"**{title}**",
                     color=discord.Color.blue()
                 )
-                if thumbnail:
-                    embed.set_thumbnail(url=thumbnail)
                 await ctx.send(embed=embed)
 
         if not ctx.voice_client.is_playing():
@@ -83,7 +80,7 @@ class Musica(commands.Cog):
 
     async def play_next(self, ctx):
         if self.queue:
-            url, title, thumbnail = self.queue.pop(0)
+            url, title = self.queue.pop(0)
             self.current_song = title
 
             source = discord.FFmpegOpusAudio(url, **FFMPEG_OPTIONS, executable=ffmpeg_path)
@@ -94,8 +91,6 @@ class Musica(commands.Cog):
                 description=f"**{title}**",
                 color=discord.Color.green()
             )
-            if thumbnail:
-                embed.set_thumbnail(url=thumbnail)
             embed.set_footer(text="Use the buttons below to control playback.")
 
             view = PlayerControls(ctx, self)
