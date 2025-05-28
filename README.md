@@ -14,3 +14,5 @@ To set up vscode environment put the following in the terminal,
 8. create a .env file in your folder and add the text DISCORD_TOKEN = '*your_token*'
 
 To run type: python main.py
+
+test
