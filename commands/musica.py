@@ -13,8 +13,11 @@ FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn -loglevel panic'
 }
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ffmpeg_path = "ffmpeg"  #FOR IF YOU ARE ON WINDOWS  os.path.join(BASE_DIR, "bin", "ffmpeg", "ffmpeg.exe")
+ffmpeg_path = "ffmpeg"  # Use "ffmpeg" if on windows os.path.join(BASE_DIR, "bin", "ffmpeg", "ffmpeg.exe")
+
+
 class Musica(commands.Cog):
     def __init__(self, client):
         self.client = client
@@ -24,6 +27,9 @@ class Musica(commands.Cog):
 
     def same_voice_channel(self, ctx):
         return ctx.author.voice and ctx.voice_client and ctx.author.voice.channel == ctx.voice_client.channel
+
+    def make_queue_entry(self, search, title=None, thumbnail=None, url=None):
+        return (search, title or search, thumbnail, url)
 
     async def start_idle_timer(self, ctx):
         if self.idle_timer:
@@ -65,45 +71,50 @@ class Musica(commands.Cog):
         if not ctx.voice_client:
             await voice_channel.connect()
 
-        async with ctx.typing():
-            with yt_dlp.YoutubeDL(YDL_OPTIONS) as ydl:
-                info = ydl.extract_info(f"ytsearch:{search}", download=False)
-                if 'entries' in info:
-                    info = info['entries'][0]
-                url = info['url']
-                title = info['title']
-                thumbnail = info.get('thumbnail')
-                self.queue.append((url, title, thumbnail))
+        if not ctx.voice_client.is_playing() and len(self.queue) == 0:
+            async with ctx.typing():
+                with yt_dlp.YoutubeDL(YDL_OPTIONS) as ydl:
+                    info = ydl.extract_info(f"ytsearch:{search}", download=False)
+                    if 'entries' in info:
+                        info = info['entries'][0]
+                    url = info['url']
+                    title = info['title']
+                    thumbnail = info.get('thumbnail')
+                    self.queue.append(self.make_queue_entry(search, title, thumbnail, url))
 
-                embed = discord.Embed(
-                    title="🎶 Added to Queue",
-                    description=f"**{title}**",
-                    color=discord.Color.blue()
-                )
-                if thumbnail:
-                    embed.set_thumbnail(url=thumbnail)
-                await ctx.send(embed=embed)
+                    embed = discord.Embed(
+                        title="🎶 Added to Queue",
+                        description=f"**{title}**",
+                        color=discord.Color.blue()
+                    )
+                    if thumbnail:
+                        embed.set_thumbnail(url=thumbnail)
+                    await ctx.send(embed=embed)
 
-        if not ctx.voice_client.is_playing():
             await self.play_next(ctx)
-
-    async def disable_controls_and_continue(self, ctx, view):
-        try:
-            view.disable_all_buttons()
-            if view.message:
-                await view.message.edit(view=view)
-        except Exception as e:
-            print(f"Error disabling buttons: {e}")
-        
-        await self.play_next(ctx)
+        else:
+            self.queue.append(self.make_queue_entry(search))
+            embed = discord.Embed(
+                title="🎶 Added to Queue",
+                description=f"**{search}** (will load when playing)",
+                color=discord.Color.blue()
+            )
+            await ctx.send(embed=embed)
 
     async def play_next(self, ctx):
         if self.queue:
-            url, title, thumbnail = self.queue.pop(0)
+            search, title, thumbnail, url = self.queue.pop(0)
+            if url is None:
+                with yt_dlp.YoutubeDL(YDL_OPTIONS) as ydl:
+                    info = ydl.extract_info(f"ytsearch:{search}", download=False)
+                    if 'entries' in info:
+                        info = info['entries'][0]
+                    url = info['url']
+                    title = info['title']
+                    thumbnail = info.get('thumbnail')
             self.current_song = title
 
             source = discord.FFmpegOpusAudio(url, **FFMPEG_OPTIONS, executable=ffmpeg_path)
-
             view = PlayerControls(ctx, self)
 
             embed = discord.Embed(
@@ -111,9 +122,9 @@ class Musica(commands.Cog):
                 description=f"**{title}**",
                 color=discord.Color.green()
             )
-            embed.set_thumbnail(url=thumbnail)
+            if thumbnail:
+                embed.set_thumbnail(url=thumbnail)
             embed.set_footer(text="Use the buttons below to control playback.")
-
             message = await ctx.send(embed=embed, view=view)
             view.message = message
 
@@ -127,6 +138,10 @@ class Musica(commands.Cog):
             self.current_song = None
             await self.start_idle_timer(ctx)
 
+    async def disable_controls_and_continue(self, ctx, view):
+        view.disable_all_buttons()
+        await view.message.edit(view=view)
+        await self.play_next(ctx)
 
     @commands.command()
     async def skip(self, ctx):
@@ -158,7 +173,10 @@ class Musica(commands.Cog):
         embed.add_field(name="Now Playing 🎵", value=now_playing, inline=False)
 
         if self.queue:
-            queue_list = "\n".join([f"{idx+1}. {title}" for idx, (_, title, _) in enumerate(self.queue)])
+            queue_list = "\n".join([
+                f"{idx+1}. {title if title else search}"
+                for idx, (search, title, _, _) in enumerate(self.queue)
+            ])
             embed.add_field(name="Up Next ⏭️", value=queue_list, inline=False)
         else:
             embed.add_field(name="Up Next ⏭️", value="The queue is empty.", inline=False)
@@ -193,6 +211,7 @@ class Musica(commands.Cog):
                 color=discord.Color.red()
             )
             await ctx.send(embed=embed)
+
 
 async def setup(client):
     await client.add_cog(Musica(client))
