@@ -12,5 +12,15 @@ jobs:
   run-local:
     runs-on: self-hosted
     steps:
-      - run: cd /home/ryan/projs/bot/BonBot && git fetch && git pull
-      - run: sudo /bin/systemctl restart bonbot.service
+      - name: Update code from Git
+        working-directory: /home/ryan/projs/bot/BonBot
+        run: |
+          echo "Fetching latest changes..."
+          git fetch --all
+          echo "Pulling latest changes..."
+          git pull
+        
+      - name: Restart Apache service
+        run: |
+          echo "Restarting Apache..."
+          sudo /bin/systemctl restart apache2.service
