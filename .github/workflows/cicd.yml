@@ -9,7 +9,7 @@ on:
       - main
       
 jobs:
-  run-local:
+  deploy-to-rainfall-discordbot:
     runs-on: self-hosted
     steps:
       - name: Update code from Git
