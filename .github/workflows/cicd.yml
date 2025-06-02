@@ -20,7 +20,7 @@ jobs:
           echo "Pulling latest changes..."
           git pull
         
-      - name: Restart Apache service
+      - name: Restart BonBot service
         run: |
-          echo "Restarting Apache..."
+          echo "Restarting BonBot..."
           sudo /bin/systemctl restart bonbot.service
